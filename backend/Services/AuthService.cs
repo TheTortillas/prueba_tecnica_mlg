@@ -1,10 +1,10 @@
 using backend.DTOs;
 using backend.Interfaces;
+using backend.Services.Auth;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BCrypt.Net;
 
 namespace backend.Services
 {
@@ -12,11 +12,13 @@ namespace backend.Services
     {
         private readonly IClienteRepository _clienteRepository;
         private readonly IConfiguration _configuration;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public AuthService(IClienteRepository clienteRepository, IConfiguration configuration)
+        public AuthService(IClienteRepository clienteRepository, IConfiguration configuration, IPasswordHasher passwordHasher)
         {
             _clienteRepository = clienteRepository;
             _configuration = configuration;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<LoginResponseDto?> LoginAsync(LoginDto loginDto)
@@ -84,12 +86,12 @@ namespace backend.Services
 
         public string HashPassword(string password)
         {
-            return BCrypt.Net.BCrypt.HashPassword(password);
+            return _passwordHasher.Hash(password);
         }
 
         public bool VerifyPassword(string password, string hashedPassword)
         {
-            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+            return _passwordHasher.Verify(password, hashedPassword);
         }
     }
 }

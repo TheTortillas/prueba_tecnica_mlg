@@ -2,6 +2,7 @@ using backend.Data;
 using backend.Interfaces;
 using backend.Repositories;
 using backend.Services;
+using backend.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -23,6 +24,7 @@ builder.Services.AddScoped<IClienteArticuloRepository, ClienteArticuloRepository
 
 // Service Registration
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
