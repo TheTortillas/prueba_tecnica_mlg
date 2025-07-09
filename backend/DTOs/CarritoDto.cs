@@ -18,6 +18,13 @@ namespace backend.DTOs
         public int ClienteId { get; set; }
         public int ArticuloId { get; set; }
         public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
+    }
+
+    public class ClienteArticuloUpdateDto
+    {
+        public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
     }
 
     public class CarritoItemDto
@@ -28,6 +35,12 @@ namespace backend.DTOs
 
     public class CarritoDto
     {
+        public List<CarritoItemDto> Items { get; set; } = new List<CarritoItemDto>();
+    }
+
+    public class CompraRequestDto
+    {
+        public int ClienteId { get; set; }
         public List<CarritoItemDto> Items { get; set; } = new List<CarritoItemDto>();
     }
 

@@ -72,7 +72,7 @@ namespace backend.Repositories
             return null;
         }
 
-        public async Task<IEnumerable<ClienteArticuloDto>> GetByClienteAsync(int clienteId)
+        public async Task<IEnumerable<ClienteArticuloDto>> GetByClienteIdAsync(int clienteId)
         {
             var clienteArticulos = new List<ClienteArticuloDto>();
 
@@ -101,7 +101,7 @@ namespace backend.Repositories
             return clienteArticulos;
         }
 
-        public async Task<IEnumerable<ClienteArticuloDto>> GetByArticuloAsync(int articuloId)
+        public async Task<IEnumerable<ClienteArticuloDto>> GetByArticuloIdAsync(int articuloId)
         {
             var clienteArticulos = new List<ClienteArticuloDto>();
 
@@ -173,7 +173,7 @@ namespace backend.Repositories
             return rowsAffected > 0;
         }
 
-        public async Task<CompraResponseDto> ProcesarCarritoAsync(int clienteId, CarritoDto carrito)
+        public async Task<CompraResponseDto> ProcesarCompraAsync(CompraRequestDto compraRequest)
         {
             var response = new CompraResponseDto();
             var compras = new List<ClienteArticuloDto>();
@@ -184,7 +184,7 @@ namespace backend.Repositories
 
             try
             {
-                foreach (var item in carrito.Items)
+                foreach (var item in compraRequest.Items)
                 {
                     var articulo = await _articuloRepository.GetByIdAsync(item.ArticuloId);
                     if (articulo == null)
@@ -206,7 +206,7 @@ namespace backend.Repositories
                         CommandType = CommandType.StoredProcedure
                     };
 
-                    command.Parameters.AddWithValue("@ClienteId", clienteId);
+                    command.Parameters.AddWithValue("@ClienteId", compraRequest.ClienteId);
                     command.Parameters.AddWithValue("@ArticuloId", item.ArticuloId);
                     command.Parameters.AddWithValue("@Cantidad", item.Cantidad);
                     command.Parameters.AddWithValue("@PrecioUnitario", articulo.Precio);
@@ -224,7 +224,7 @@ namespace backend.Repositories
                     var compra = new ClienteArticuloDto
                     {
                         ClienteArticuloId = clienteArticuloId,
-                        ClienteId = clienteId,
+                        ClienteId = compraRequest.ClienteId,
                         ArticuloId = item.ArticuloId,
                         Cantidad = item.Cantidad,
                         PrecioUnitario = articulo.Precio,
@@ -252,6 +252,80 @@ namespace backend.Repositories
             }
 
             return response;
+        }
+
+        public async Task<ClienteArticuloDto?> UpdateAsync(int id, ClienteArticuloUpdateDto clienteArticuloUpdateDto)
+        {
+            using var connection = await _databaseConnection.CreateConnectionAsync();
+            using var command = new SqlCommand("SP_ClienteArticulo_Update", (SqlConnection)connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            command.Parameters.AddWithValue("@ClienteArticuloId", id);
+            command.Parameters.AddWithValue("@Cantidad", clienteArticuloUpdateDto.Cantidad);
+            command.Parameters.AddWithValue("@PrecioUnitario", clienteArticuloUpdateDto.PrecioUnitario);
+
+            var rowsAffected = await command.ExecuteNonQueryAsync();
+
+            if (rowsAffected > 0)
+            {
+                return await GetByIdAsync(id);
+            }
+
+            return null;
+        }
+
+        public async Task<IEnumerable<ClienteArticuloDto>> GetHistorialComprasAsync(int clienteId)
+        {
+            var historial = new List<ClienteArticuloDto>();
+
+            using var connection = await _databaseConnection.CreateConnectionAsync();
+            using var command = new SqlCommand("SP_ClienteArticulo_GetHistorial", (SqlConnection)connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.AddWithValue("@ClienteId", clienteId);
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                historial.Add(new ClienteArticuloDto
+                {
+                    ClienteArticuloId = reader.GetInt32("ClienteArticuloId"),
+                    ClienteId = reader.GetInt32("ClienteId"),
+                    ArticuloId = reader.GetInt32("ArticuloId"),
+                    Fecha = reader.GetDateTime("Fecha"),
+                    Cantidad = reader.GetInt32("Cantidad"),
+                    PrecioUnitario = reader.GetDecimal("PrecioUnitario"),
+                    Total = reader.GetDecimal("Total")
+                });
+            }
+
+            return historial;
+        }
+
+        public async Task<object> GetEstadisticasClienteAsync(int clienteId)
+        {
+            using var connection = await _databaseConnection.CreateConnectionAsync();
+            using var command = new SqlCommand("SP_ClienteArticulo_GetEstadisticas", (SqlConnection)connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.AddWithValue("@ClienteId", clienteId);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new
+                {
+                    TotalCompras = reader.GetInt32("TotalCompras"),
+                    MontoTotal = reader.GetDecimal("MontoTotal"),
+                    ArticulosFavoritos = reader.IsDBNull("ArticulosFavoritos") ? null : reader.GetString("ArticulosFavoritos")
+                };
+            }
+
+            return new { TotalCompras = 0, MontoTotal = 0.0m, ArticulosFavoritos = (string?)null };
         }
     }
 }

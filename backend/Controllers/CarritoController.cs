@@ -29,7 +29,13 @@ namespace backend.Controllers
                     return BadRequest(new { message = "Cliente no identificado" });
                 }
 
-                var resultado = await _clienteArticuloRepository.ProcesarCarritoAsync(clienteId, carrito);
+                var compraRequest = new CompraRequestDto
+                {
+                    ClienteId = clienteId,
+                    Items = carrito.Items
+                };
+
+                var resultado = await _clienteArticuloRepository.ProcesarCompraAsync(compraRequest);
 
                 if (!resultado.Exito)
                 {
@@ -55,7 +61,7 @@ namespace backend.Controllers
                     return BadRequest(new { message = "Cliente no identificado" });
                 }
 
-                var compras = await _clienteArticuloRepository.GetByClienteAsync(clienteId);
+                var compras = await _clienteArticuloRepository.GetByClienteIdAsync(clienteId);
                 return Ok(compras);
             }
             catch (Exception ex)
