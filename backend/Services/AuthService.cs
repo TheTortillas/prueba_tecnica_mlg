@@ -27,10 +27,14 @@ namespace backend.Services
             if (cliente == null)
                 return null;
 
-            // Aquí necesitarías obtener el hash de la contraseña desde la base de datos
-            // Por ahora, asumimos que el password está hasheado
-            // if (!VerifyPassword(loginDto.Password, hashedPassword))
-            //     return null;
+            // Obtener el hash de la contraseña desde la base de datos
+            var passwordHash = await _clienteRepository.GetPasswordHashByEmailAsync(loginDto.Email);
+            if (passwordHash == null)
+                return null;
+
+            // Verificar la contraseña
+            if (!VerifyPassword(loginDto.Password, passwordHash))
+                return null;
 
             var token = GenerateJwtToken(cliente);
             var expiresAt = DateTime.UtcNow.AddHours(24);

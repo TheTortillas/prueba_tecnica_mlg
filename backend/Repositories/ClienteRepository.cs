@@ -198,5 +198,23 @@ namespace backend.Repositories
             await command.ExecuteNonQueryAsync();
             return (bool)existsParam.Value;
         }
+
+        public async Task<string?> GetPasswordHashByEmailAsync(string email)
+        {
+            using var connection = await _databaseConnection.CreateConnectionAsync();
+            using var command = new SqlCommand("SP_Cliente_GetByEmail", (SqlConnection)connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.AddWithValue("@Email", email);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return reader.GetString("PasswordHash");
+            }
+
+            return null;
+        }
     }
 }
