@@ -8,6 +8,7 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { passwordMatchValidator } from '../../validators/password-match.validator';
 
 @Component({
   selector: 'app-register',
@@ -147,15 +148,57 @@ import { AuthService } from '../../services/auth.service';
                 class="block text-sm font-medium text-gray-700"
                 >Contraseña</label
               >
-              <input
-                id="password"
-                name="password"
-                type="password"
-                formControlName="password"
-                required
-                class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Contraseña"
-              />
+              <div class="relative">
+                <input
+                  id="password"
+                  name="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  formControlName="password"
+                  required
+                  class="mt-1 appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Contraseña"
+                />
+                <button
+                  type="button"
+                  (click)="togglePasswordVisibility()"
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
+                >
+                  <svg
+                    *ngIf="!showPassword"
+                    class="h-5 w-5 text-gray-400 hover:text-gray-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                  <svg
+                    *ngIf="showPassword"
+                    class="h-5 w-5 text-gray-400 hover:text-gray-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+                    />
+                  </svg>
+                </button>
+              </div>
               <div
                 *ngIf="
                   registerForm.get('password')?.invalid &&
@@ -164,6 +207,85 @@ import { AuthService } from '../../services/auth.service';
                 class="text-red-500 text-sm mt-1"
               >
                 Contraseña debe tener al menos 6 caracteres
+              </div>
+            </div>
+
+            <div>
+              <label
+                for="confirmPassword"
+                class="block text-sm font-medium text-gray-700"
+                >Confirmar Contraseña</label
+              >
+              <div class="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  formControlName="confirmPassword"
+                  required
+                  class="mt-1 appearance-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="Confirmar contraseña"
+                />
+                <button
+                  type="button"
+                  (click)="toggleConfirmPasswordVisibility()"
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center z-20"
+                >
+                  <svg
+                    *ngIf="!showConfirmPassword"
+                    class="h-5 w-5 text-gray-400 hover:text-gray-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                  <svg
+                    *ngIf="showConfirmPassword"
+                    class="h-5 w-5 text-gray-400 hover:text-gray-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div
+                *ngIf="
+                  (registerForm.get('confirmPassword')?.invalid &&
+                  registerForm.get('confirmPassword')?.touched) ||
+                  (registerForm.errors?.['passwordMismatch'] &&
+                  registerForm.get('confirmPassword')?.touched)
+                "
+                class="text-red-500 text-sm mt-1"
+              >
+                <span
+                  *ngIf="registerForm.get('confirmPassword')?.errors?.['required']"
+                >
+                  Confirmación de contraseña es requerida
+                </span>
+                <span
+                  *ngIf="registerForm.errors?.['passwordMismatch'] && !registerForm.get('confirmPassword')?.errors?.['required']"
+                >
+                  Las contraseñas no coinciden
+                </span>
               </div>
             </div>
           </div>
@@ -222,19 +344,33 @@ export class RegisterComponent {
   loading = false;
   errorMessage = '';
   successMessage = '';
+  showPassword = false;
+  showConfirmPassword = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
   ) {
-    this.registerForm = this.fb.group({
-      nombre: ['', Validators.required],
-      apellidos: ['', Validators.required],
-      direccion: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-    });
+    this.registerForm = this.fb.group(
+      {
+        nombre: ['', Validators.required],
+        apellidos: ['', Validators.required],
+        direccion: ['', Validators.required],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', Validators.required],
+      },
+      { validators: passwordMatchValidator() }
+    );
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
   }
 
   onSubmit(): void {
@@ -243,7 +379,11 @@ export class RegisterComponent {
       this.errorMessage = '';
       this.successMessage = '';
 
-      this.authService.register(this.registerForm.value).subscribe({
+      // Remove confirmPassword from the form data before sending to backend
+      const formData = { ...this.registerForm.value };
+      delete formData.confirmPassword;
+
+      this.authService.register(formData).subscribe({
         next: (response) => {
           this.loading = false;
           this.successMessage =
